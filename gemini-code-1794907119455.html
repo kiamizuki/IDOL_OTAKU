@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アイドル検定アプリ</title>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ff477e;
+      --primary-dark: #e03568;
+      --secondary: #5c6bc0;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-main: #333333;
+      --text-muted: #666666;
+      --border-color: #e0e0e0;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Meiryo", "メイリオ", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #ff7096);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+
+    main {
+      flex: 1;
+      max-width: 640px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: #fff;
+    }
+
+    .radio-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .radio-group.two-col {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .radio-btn {
+      display: block;
+      text-align: center;
+      padding: 0.7rem 0.5rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]:checked + .radio-btn {
+      border-color: var(--primary);
+      background-color: #fff0f5;
+      color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: white;
+      margin-top: 0.8rem;
+    }
+
+    .btn-secondary:hover {
+      background-color: #4959b0;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 2px solid var(--text-muted);
+      color: var(--text-muted);
+      margin-top: 0.8rem;
+    }
+
+    /* クイズ画面 */
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: bold;
+    }
+
+    .question-box {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      background-color: #fff5f8;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .question-label {
+      font-size: 0.9rem;
+      color: var(--primary);
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-text {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .choice-btn {
+      width: 100%;
+      padding: 1rem;
+      text-align: left;
+      background: #fff;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background-color: #fff9fb;
+    }
+
+    .choice-btn.correct {
+      background-color: #e8f5e9;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+
+    .choice-btn.wrong {
+      background-color: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+
+    .feedback {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* 結果画面 */
+    .score-display {
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+
+    .score-number {
+      font-size: 2.8rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* ランキング画面 */
+    .ranking-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .ranking-table th, .ranking-table td {
+      padding: 0.8rem 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .ranking-table th {
+      background-color: #f1f3f5;
+      font-size: 0.9rem;
+    }
+
+    .rank-badge {
+      display: inline-block;
+      width: 26px;
+      height: 26px;
+      line-height: 26px;
+      text-align: center;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .rank-1 { background: #ffd700; color: #333; }
+    .rank-2 { background: #c0c0c0; color: #333; }
+    .rank-3 { background: #cd7f32; color: #fff; }
+    .rank-other { background: #eee; color: #666; }
+
+    .note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><i class="fa-solid fa-crown"></i> アイドル検定アプリ</h1>
+  </header>
+
+  <main>
+    <!-- ローディング表示 -->
+    <div id="loading-screen" class="card" style="text-align: center;">
+      <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+      <p>データベースを読み込んでいます...</p>
+    </div>
+
+    <!-- メイン画面 -->
+    <div id="main-screen" class="card hidden">
+      <h2><i class="fa-solid fa-sliders"></i> クイズ設定</h2>
+
+      <!-- モード選択 -->
+      <div class="form-group">
+        <label><i class="fa-solid fa-list-check"></i> クイズモード</label>
+        <div class="radio-group two-col">
+          <div>
+            <input type="radio" name="mode" id="mode-group" value="group" checked onchange="toggleGroupSelect()">
+            <label for="mode-group" class="radio-btn"><i class="fa-solid fa-users"></i> グループ当て</label>
+          </div>
+          <div>
+            <input type="radio" name="mode" id="mode-reading" value="reading" onchange="toggleGroupSelect()">
+            <label for="mode-reading" class="radio-btn"><i class="fa-solid fa-font"></i> 読み方クイズ</label>
+          </div>
+        </div>
+        <p id="mode-desc" class="note">アイドルの名前から所属グループを当てるクイズです（全アイドル対象）。</p>
+      </div>
+
+      <!-- グループ選択（読み方クイズ時のみ有効） -->
+      <div class="form-group hidden" id="group-select-container">
+        <label for="target-group"><i class="fa-solid fa-star"></i> 挑戦するグループ</label>
+        <select id="target-group">
+          <option value="ALL">全アイドルからランダム</option>
+        </select>
+      </div>
+
+      <!-- 問題数選択 -->
+      <div class="form-group">
+        <label><i class="fa-solid fa-hashtag"></i> 出題数</label>
+        <div class="radio-group">
+          <div>
+            <input type="radio" name="count" id="count-10" value="10" checked>
+            <label for="count-10" class="radio-btn">10問</label>
+          </div>
+          <div>
+            <input type="radio" name="count" id="count-20" value="20">
+            <label for="count-20" class="radio-btn">20問</label>
+          </div>
+          <div>
+            <input type="radio" name="count" id="count-50" value="50">
+            <label for="count-50" class="radio-btn">50問</label>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="startQuiz()">
+        <i class="fa-solid fa-play"></i> 検定スタート！
+      </button>
+
+      <button class="btn btn-secondary" onclick="showRanking()">
+        <i class="fa-solid fa-trophy"></i> ランキングを見る
+      </button>
+    </div>
+
+    <!-- クイズ画面 -->
+    <div id="quiz-screen" class="card hidden">
+      <div class="quiz-header">
+        <span id="quiz-mode-badge"><i class="fa-solid fa-tag"></i> グループ当て</span>
+        <span id="quiz-progress">第 1 / 10 問</span>
+      </div>
+
+      <div class="question-box">
+        <div class="question-label" id="question-prompt">このアイドルの所属グループは？</div>
+        <p class="question-text" id="question-target">櫻井翔</p>
+      </div>
+
+      <div class="choices" id="choices-container"></div>
+
+      <div id="feedback-box" class="feedback hidden"></div>
+
+      <button id="next-btn" class="btn btn-primary hidden" style="margin-top: 1rem;" onclick="nextQuestion()">
+        次の問題へ <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-screen" class="card hidden">
+      <h2><i class="fa-solid fa-flag-checkered"></i> 検定結果</h2>
+      <div class="score-display">
+        <div>正解数: <span id="correct-count">0</span> / <span id="total-count">10</span> 問</div>
+        <div class="score-number"><span id="final-score">0</span> 点</div>
+        <p id="result-category-label" style="color: var(--text-muted); font-weight: bold;"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="nickname"><i class="fa-solid fa-user-pen"></i> ランキングにスコアを登録</label>
+        <input type="text" id="nickname" placeholder="ニックネームを入力（例：アイドル博士）" maxlength="15">
+      </div>
+
+      <button id="save-score-btn" class="btn btn-primary" onclick="saveScore()">
+        <i class="fa-solid fa-floppy-disk"></i> ランキングに登録する
+      </button>
+
+      <button class="btn btn-secondary" onclick="showRanking()">
+        <i class="fa-solid fa-trophy"></i> ランキングを見る
+      </button>
+
+      <button class="btn btn-outline" onclick="showMain()">
+        <i class="fa-solid fa-house"></i> トップに戻る
+      </button>
+    </div>
+
+    <!-- ランキング画面 -->
+    <div id="ranking-screen" class="card hidden">
+      <h2><i class="fa-solid fa-trophy"></i> ランキング</h2>
+
+      <div class="form-group">
+        <label for="ranking-filter"><i class="fa-solid fa-filter"></i> カテゴリ選択</label>
+        <select id="ranking-filter" onchange="renderRanking()">
+          <option value="ALL">総合ランキング（全モード・全グループ）</option>
+        </select>
+      </div>
+
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">順位</th>
+            <th>ニックネーム</th>
+            <th style="width: 100px; text-align: right;">スコア</th>
+          </tr>
+        </thead>
+        <tbody id="ranking-body"></tbody>
+      </table>
+
+      <button class="btn btn-outline" onclick="showMain()" style="margin-top: 1.5rem;">
+        <i class="fa-solid fa-house"></i> トップに戻る
+      </button>
+    </div>
+  </main>
+
+  <footer>
+    Powered by GitHub Pages
+  </footer>
+
+  <script>
+    // GitHub Pages上のJSONデータベースURL（同じリポジトリなら相対パスでOK）
+    const DB_URL = './idols.json';
+    const STORAGE_KEY = 'idol_kentei_rankings_v1';
+
+    let idolDatabase = [];
+    let groupsList = [];
+
+    // クイズ進行用状態
+    let currentQuiz = [];
+    let currentIndex = 0;
+    let correctAnswers = 0;
+    let selectedMode = 'group'; // 'group' or 'reading'
+    let selectedGroup = 'ALL';
+    let questionCount = 10;
+
+    // 初期化処理：GitHub PagesからJSONデータを取得
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch(DB_URL);
+        if (!response.ok) throw new Error('データの取得に失敗しました');
+        idolDatabase = await response.json();
+
+        // グループ一覧を抽出
+        groupsList = [...new Set(idolDatabase.map(item => item.group))];
+
+        populateGroupSelects();
+        document.getElementById('loading-screen').classList.add('hidden');
+        document.getElementById('main-screen').classList.remove('hidden');
+      } catch (error) {
+        document.getElementById('loading-screen').innerHTML = `
+          <i class="fa-solid fa-triangle-exclamation fa-2x" style="color: #f44336;"></i>
+          <p>データベース（idols.json）の読み込みに失敗しました。<br>GitHub Pages上にファイルが正しく配置されているか確認してください。</p>
+        `;
+        console.error(error);
+      }
+    });
+
+    // グループ選択肢の生成（メイン画面＆ランキング画面）
+    function populateGroupSelects() {
+      const targetGroupSelect = document.getElementById('target-group');
+      const rankingFilterSelect = document.getElementById('ranking-filter');
+
+      groupsList.forEach(group => {
+        // 読み方クイズ用グループ選択
+        const opt1 = document.createElement('option');
+        opt1.value = group;
+        opt1.textContent = group;
+        targetGroupSelect.appendChild(opt1);
+
+        // ランキング絞り込み用
+        const opt2 = document.createElement('option');
+        opt2.value = group;
+        opt2.textContent = `${group} ランキング`;
+        rankingFilterSelect.appendChild(opt2);
+      });
+    }
+
+    // モード切り替え時のUI表示制御
+    function toggleGroupSelect() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const groupContainer = document.getElementById('group-select-container');
+      const modeDesc = document.getElementById('mode-desc');
+
+      if (mode === 'reading') {
+        groupContainer.classList.remove('hidden');
+        modeDesc.textContent = 'アイドルの名前の読み方（ひらがな）を当てるクイズです。';
+      } else {
+        groupContainer.classList.add('hidden');
+        modeDesc.textContent = 'アイドルの名前から所属グループを当てるクイズです（全アイドル対象）。';
+      }
+    }
+
+    // クイズ開始
+    function startQuiz() {
+      selectedMode = document.querySelector('input[name="mode"]:checked').value;
+      questionCount = parseInt(document.querySelector('input[name="count"]:checked').value, 10);
+      selectedGroup = (selectedMode === 'reading') ? document.getElementById('target-group').value : 'ALL';
+
+      // 出題対象プールの抽出
+      let pool = selectedGroup === 'ALL'
+        ? [...idolDatabase]
+        : idolDatabase.filter(item => item.group === selectedGroup);
+
+      if (pool.length < 4) {
+        alert('選択されたグループの登録人数が少なすぎます（最低4名必要です）。');
+        return;
+      }
+
+      // 問題を生成（登録人数より出題数が多い場合は重複を許可してシャッフル補充）
+      currentQuiz = [];
+      while (currentQuiz.length < questionCount) {
+        const shuffled = [...pool].sort(() => Math.random() - 0.5);
+        currentQuiz.push(...shuffled);
+      }
+      currentQuiz = currentQuiz.slice(0, questionCount);
+
+      currentIndex = 0;
+      correctAnswers = 0;
+
+      // ヘッダーバッジ更新
+      const modeText = selectedMode === 'group'
+        ? 'グループ当て'
+        : `読み方クイズ（${selectedGroup === 'ALL' ? '全アイドル' : selectedGroup}）`;
+      document.getElementById('quiz-mode-badge').innerHTML = `<i class="fa-solid fa-tag"></i> ${modeText}`;
+
+      switchScreen('quiz-screen');
+      renderQuestion();
+    }
+
+    // 問題の描画
+    function renderQuestion() {
+      const item = currentQuiz[currentIndex];
+      document.getElementById('quiz-progress').textContent = `第 ${currentIndex + 1} / ${questionCount} 問`;
+      document.getElementById('question-target').textContent = item.name;
+      document.getElementById('feedback-box').classList.add('hidden');
+      document.getElementById('next-btn').classList.add('hidden');
+
+      let correctAnswer = '';
+      let wrongCandidates = [];
+
+      if (selectedMode === 'group') {
+        document.getElementById('question-prompt').textContent = 'このアイドルの所属グループは？';
+        correctAnswer = item.group;
+        wrongCandidates = groupsList.filter(g => g !== correctAnswer);
+      } else {
+        document.getElementById('question-prompt').textContent = 'このアイドルの名前の読み方は？';
+        correctAnswer = item.kana;
+        // 同じグループ優先でダミーの読み方を抽出、足りなければ全体から抽出
+        let sameGroupKana = idolDatabase
+          .filter(i => i.group === item.group && i.kana !== correctAnswer)
+          .map(i => i.kana);
+        let otherKana = idolDatabase
+          .filter(i => i.group !== item.group && i.kana !== correctAnswer)
+          .map(i => i.kana);
+        wrongCandidates = [...new Set([...sameGroupKana, ...otherKana])];
+      }
+
+      // 4択の生成
+      const shuffledWrong = wrongCandidates.sort(() => Math.random() - 0.5).slice(0, 3);
+      const choices = [correctAnswer, ...shuffledWrong].sort(() => Math.random() - 0.5);
+
+      const container = document.getElementById('choices-container');
+      container.innerHTML = '';
+
+      choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.onclick = () => checkAnswer(btn, choice, correctAnswer);
+        container.appendChild(btn);
+      });
+    }
+
+    // 解答チェック
+    function checkAnswer(selectedBtn, selectedValue, correctAnswer) {
+      const buttons = document.querySelectorAll('.choice-btn');
+      buttons.forEach(b => b.disabled = true);
+
+      const feedback = document.getElementById('feedback-box');
+      feedback.classList.remove('hidden');
+
+      if (selectedValue === correctAnswer) {
+        selectedBtn.classList.add('correct');
+        correctAnswers++;
+        feedback.style.backgroundColor = '#e8f5e9';
+        feedback.style.color = '#2e7d32';
+        feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> 正解！';
+      } else {
+        selectedBtn.classList.add('wrong');
+        buttons.forEach(b => {
+          if (b.textContent === correctAnswer) b.classList.add('correct');
+        });
+        feedback.style.backgroundColor = '#ffebee';
+        feedback.style.color = '#c62828';
+        feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 不正解… 正解は「${correctAnswer}」`;
+      }
+
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.classList.remove('hidden');
+      nextBtn.innerHTML = (currentIndex + 1 < questionCount)
+        ? '次の問題へ <i class="fa-solid fa-arrow-right"></i>'
+        : '結果を見る <i class="fa-solid fa-flag-checkered"></i>';
+    }
+
+    // 次の問題 or 結果画面へ
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < questionCount) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    // 結果画面表示
+    function showResult() {
+      // スコア計算（100点満点換算 ＋ 問題数ボーナス）
+      const accuracy = correctAnswers / questionCount;
+      const score = Math.round(accuracy * 100 * (questionCount / 10)); // 10問=最大100点, 20問=最大200点, 50問=最大500点
+
+      document.getElementById('correct-count').textContent = correctAnswers;
+      document.getElementById('total-count').textContent = questionCount;
+      document.getElementById('final-score').textContent = score;
+
+      const catLabel = selectedMode === 'group'
+        ? `モード: グループ当て（${questionCount}問）`
+        : `モード: 読み方クイズ / ${selectedGroup === 'ALL' ? '全アイドル' : selectedGroup}（${questionCount}問）`;
+      document.getElementById('result-category-label').textContent = catLabel;
+
+      // 登録ボタンをリセット
+      const saveBtn = document.getElementById('save-score-btn');
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ランキングに登録する';
+
+      switchScreen('result-screen');
+    }
+
+    // スコア保存（localStorage）
+    function saveScore() {
+      const nicknameInput = document.getElementById('nickname');
+      const nickname = nicknameInput.value.trim() || '名無しのファン';
+      const score = parseInt(document.getElementById('final-score').textContent, 10);
+
+      const rankings = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      rankings.push({
+        nickname: nickname,
+        score: score,
+        group: selectedGroup, // 'ALL' または グループ名
+        mode: selectedMode,
+        count: questionCount,
+        date: new Date().toISOString()
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rankings));
+
+      const saveBtn = document.getElementById('save-score-btn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 登録完了！';
+
+      // 登録したカテゴリをランキング画面で初期選択状態にする
+      document.getElementById('ranking-filter').value = selectedGroup;
+    }
+
+    // ランキング画面表示
+    function showRanking() {
+      renderRanking();
+      switchScreen('ranking-screen');
+    }
+
+    // ランキング描画
+    function renderRanking() {
+      const filter = document.getElementById('ranking-filter').value;
+      const rankings = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+      // フィルタリング（ALLの場合は全件、グループ指定の場合はそのグループで挑戦した記録）
+      const filtered = filter === 'ALL'
+        ? rankings
+        : rankings.filter(r => r.group === filter);
+
+      // スコア降順ソート（上位20件まで表示）
+      filtered.sort((a, b) => b.score - a.score);
+      const topList = filtered.slice(0, 20);
+
+      const tbody = document.getElementById('ranking-body');
+      tbody.innerHTML = '';
+
+      if (topList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              まだランキングデータがありません。検定に挑戦してスコアを登録しましょう！
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      topList.forEach((item, idx) => {
+        const rank = idx + 1;
+        let badgeClass = 'rank-other';
+        if (rank === 1) badgeClass = 'rank-1';
+        else if (rank === 2) badgeClass = 'rank-2';
+        else if (rank === 3) badgeClass = 'rank-3';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="rank-badge ${badgeClass}">${rank}</span></td>
+          <td><strong>${escapeHtml(item.nickname)}</strong></td>
+          <td style="text-align: right; font-weight: bold; color: var(--primary);">${item.score} 点</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // メイン画面へ戻る
+    function showMain() {
+      switchScreen('main-screen');
+    }
+
+    // 画面切り替えユーティリティ
+    function switchScreen(screenId) {
+      ['main-screen', 'quiz-screen', 'result-screen', 'ranking-screen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // XSS対策用エスケープ
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, match => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[match]));
+    }
+  </script>
+</body>
+</html>
